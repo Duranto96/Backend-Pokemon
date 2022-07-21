@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { verifyToken, TOKEN_SECRET } = require("../middleware/verify");
+
 const router = express.Router();
 
 const usuarios = [

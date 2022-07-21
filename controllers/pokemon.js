@@ -1,84 +1,80 @@
-const listaPokemones = require("../models/listaPokemon");
-const pokemones = require("../models/listaPokemon");
-exports.getPokemones = (req, res) => {
-  const { types } = req.query;
+// const listaPokemones = require("../models/listaPokemon");
+// const pokemones = require("../models/listaPokemon");
+const { Pool } = require("pg");
+const pool = new Pool({
+  user: "postgres",
+  database: "proyectoFinal",
+  password: "1234",
+});
 
-  let pokemonesFiltrados = pokemones;
-
-  if (types) {
-    const [type1, type2] = types.split(",");
-    if (type1) {
-      pokemonesFiltrados = encontrarPorTypes(pokemonesFiltrados, type1);
-    }
-    if (type2) {
-      pokemonesFiltrados = encontrarPorTypes(pokemonesFiltrados, type2);
-    }
-  }
-
-  res.send(pokemonesFiltrados);
-};
-function encontrarPorTypes(pokemonesFiltrados, type1) {
-  pokemonesFiltrados = pokemonesFiltrados.filter((e) =>
-    e.elemento.some((el) => el.toLowerCase() === type1.toLowerCase())
-  );
-  return pokemonesFiltrados;
-}
-
-/////////////////////////////////////////////////////////////////
-exports.postPokemones = (req, res) => {
-  const pokemon = req.body;
-  console.log(req.body);
-  const nuevaListaPokemon = listaPokemones;
-  nuevaListaPokemon.push(pokemon);
-  res.send(nuevaListaPokemon[nuevaListaPokemon.length - 1]);
+//////////////////////Mostrar Lista de Pokemones///////////////////////
+exports.getPokemones = async (req, res) => {
+  const { rows } = await pool.query("select * from public.pokemon");
+  res.send(rows);
 };
 
-///////////////////////////////////////////////////////////////
-exports.putPokemones = (req, res) => {
-  const pokemon = req.body;
-  const { id } = req.params;
-  //Hallar posición de Pokemon a editar:
-  const posicionPokemonAEditar = listaPokemones.findIndex(
-    (poke) => poke.numero === id
-  );
+// exports.getPokemonesByid = (req, res) => {
+//   const { id } = req.params;}
 
-  const nuevoPokemon = {
-    ...listaPokemones[posicionPokemonAEditar],
-    ...pokemon,
-  };
+// function encontrarPorTypes(pokemonesFiltrados, type1) {
+//   pokemonesFiltrados = pokemonesFiltrados.filter((e) =>
+//     e.elemento.some((el) => el.toLowerCase() === type1.toLowerCase())
+//   );
+//   return pokemonesFiltrados;
+// }
 
-  listaPokemones[posicionPokemonAEditar] = nuevoPokemon;
-  res.send(nuevoPokemon);
-};
+// /////////////////////////////////////////////////////////////////
+// exports.postPokemones = (req, res) => {
+//   const pokemon = req.body;
+//   console.log(req.body);
+//   const nuevaListaPokemon = listaPokemones;
+//   nuevaListaPokemon.push(pokemon);
+//   res.send(nuevaListaPokemon[nuevaListaPokemon.length - 1]);
+// };
 
-////////////////////////////////////////////////////////////
-exports.deletePokemones = (req, res) => {
-  const pokemon = req.body;
-  const { id } = req.params;
-  //Hallar posición de Pokemon a eliminar:
-  const posicionPokemonAEliminar = listaPokemones.findIndex(
-    (poke) => poke.numero === id
-  );
-  listaPokemones.splice(posicionPokemonAEliminar, 1)[posicionPokemonAEliminar] =
-    pokemon;
-  res.send(listaPokemones[posicionPokemonAEliminar]);
-};
+// ///////////////////////////////////////////////////////////////
+// exports.putPokemones = (req, res) => {
+//   const pokemon = req.body;
+//   const { id } = req.params;
+//   //Hallar posición de Pokemon a editar:
+//   const posicionPokemonAEditar = listaPokemones.findIndex(
+//     (poke) => poke.numero === id
+//   );
 
-exports.getPokemonesByid = (req, res) => {
-  const { id } = req.params;
+//   const nuevoPokemon = {
+//     ...listaPokemones[posicionPokemonAEditar],
+//     ...pokemon,
+//   };
 
-  const posicionPokemon = listaPokemones.findIndex(
-    (poke) => poke.numero === id
-  );
+//   listaPokemones[posicionPokemonAEditar] = nuevoPokemon;
+//   res.send(nuevoPokemon);
+// };
 
-  const pokemon = listaPokemones[posicionPokemon];
+// ////////////////////////////////////////////////////////////
+// exports.deletePokemones = (req, res) => {
+//   const pokemon = req.body;
+//   const { id } = req.params;
+//   //Hallar posición de Pokemon a eliminar:
+//   const posicionPokemonAEliminar = listaPokemones.findIndex(
+//     (poke) => poke.numero === id
+//   );
+//   listaPokemones.splice(posicionPokemonAEliminar, 1)[posicionPokemonAEliminar] =
+//     pokemon;
+//   res.send(listaPokemones[posicionPokemonAEliminar]);
+// };
 
-  const next =
-    posicionPokemon != listaPokemones.length - 1
-      ? listaPokemones[posicionPokemon + 1].numero
-      : null;
+//   const posicionPokemon = listaPokemones.findIndex(
+//     (poke) => poke.numero === id
+//   );
 
-  const prev =
-    posicionPokemon != 0 ? listaPokemones[posicionPokemon - 1].numero : null;
-  res.send({ ...pokemon, next, prev });
-};
+//   const pokemon = listaPokemones[posicionPokemon];
+
+//   const next =
+//     posicionPokemon != listaPokemones.length - 1
+//       ? listaPokemones[posicionPokemon + 1].numero
+//       : null;
+
+//   const prev =
+//     posicionPokemon != 0 ? listaPokemones[posicionPokemon - 1].numero : null;
+//   res.send({ ...pokemon, next, prev });
+// };

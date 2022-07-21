@@ -9,8 +9,8 @@ const {
 } = require("../controllers/pokemon");
 const { verifyToken } = require("../middleware/verify");
 
-router.get("/pokemon", verifyToken, getPokemones);
-router.get("/pokemon/:id", verifyToken, getPokemonesByid);
+router.get("/pokemon", getPokemones);
+router.get("/pokemon/:id", getPokemonesByid);
 router.post("/pokemon", verifyToken, postPokemones);
 router.put("/editar/pokemon/:id", verifyToken, putPokemones);
 router.delete("/eliminar/pokemon/:id", verifyToken, deletePokemones);

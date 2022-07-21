@@ -23,6 +23,7 @@ app.use("/", medidasRoutes);
 app.use("/", categoriasRoutes);
 app.use("/", authRouter);
 
-app.listen(1234, () =>
-  console.log("Server listening in http://localhost:1234")
-);
+app.listen(1234, async () => {
+  console.log("Server listening in http://localhost:1234");
+  pool.connect();
+});
