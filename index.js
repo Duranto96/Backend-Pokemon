@@ -25,5 +25,4 @@ app.use("/", authRouter);
 
 app.listen(1234, async () => {
   console.log("Server listening in http://localhost:1234");
-  pool.connect();
 });
