@@ -92,6 +92,14 @@ exports.getPokemonesByid = async (req, res) => {
   });
 
   res.send(resultado[0]);
+
+  console.log(next);
+};
+
+exports.deletePokemones = async (req, res) => {
+  const { id } = req.params;
+  const { rows } = await pool.query("delete FROM pokemon where id =$1", [id]);
+  res.send(rows[0]);
 };
 
 // function encontrarPorTypes(pokemonesFiltrados, type1) {
@@ -129,20 +137,3 @@ exports.getPokemonesByid = async (req, res) => {
 // };
 
 // ////////////////////////////////////////////////////////////
-// exports.deletePokemones = (req, res) => {
-//   const pokemon = req.body;
-//   const { id } = req.params;
-//   //Hallar posición de Pokemon a eliminar:
-//   const posicionPokemonAEliminar = listaPokemones.findIndex(
-//     (poke) => poke.numero === id
-//   );
-//   listaPokemones.splice(posicionPokemonAEliminar, 1)[posicionPokemonAEliminar] =
-//     pokemon;
-//   res.send(listaPokemones[posicionPokemonAEliminar]);
-// };
-
-//   const posicionPokemon = listaPokemones.findIndex(
-//     (poke) => poke.numero === id
-//   );
-
-//   const pokemon = listaPokemones[posicionPokemon];
