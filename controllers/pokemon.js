@@ -9,12 +9,90 @@ const pool = new Pool({
 
 //////////////////////Mostrar Lista de Pokemones///////////////////////
 exports.getPokemones = async (req, res) => {
-  const { rows } = await pool.query("select * from public.pokemon");
-  res.send(rows);
+  //solucionar consulta grande con los join
+  const { rows } = await pool.query(
+    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id"
+  );
+  const resultado = rows.map((pokemon) => {
+    return {
+      id: pokemon.id,
+      nombre: pokemon.nombre,
+      numero: pokemon.numero,
+      categoria: [pokemon.categoria1, pokemon.categoria2],
+      colorcategoria: [pokemon.color_cat1, pokemon.color_cat2],
+      about: {
+        weight: pokemon.weight,
+        height: pokemon.height,
+        moves: [pokemon.nombre1, pokemon.nombre2],
+        color: pokemon.color,
+        descripcion: pokemon.descripcion,
+      },
+      basestats: {
+        hp: pokemon.hp,
+        atk: pokemon.atk,
+        def: pokemon.def,
+        satk: pokemon.satk,
+        sdef: pokemon.sdef,
+        spd: pokemon.spd,
+      },
+    };
+  });
+  //ver como devuelve los datos
+
+  // a raiz de eso, armar el objeto pokemon que le gusta al front
+
+  //rows array [{nombre:pokemon.nombre, numero:pokemon.numero, about:{weight:pokemon.weight}}]
+  res.send(resultado);
 };
 
-// exports.getPokemonesByid = (req, res) => {
-//   const { id } = req.params;}
+//////////////////////Mostrar Pokemon Descripto///////////////////////
+exports.getPokemonesByid = async (req, res) => {
+  //solucionar consulta grande con los join
+  const { id } = req.params;
+  const { rows } = await pool.query(
+    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where id =$1",
+    [id]
+  );
+  ///////////////////////////Navegar siguiente y anterior///////////////////
+
+  const { rows: next } = await pool.query(
+    "select id FROM pokemon where id =$1",
+    [id + 1]
+  );
+  const { rows: prev } = await pool.query(
+    "select id FROM pokemon where id =$1",
+    [id - 1]
+  );
+
+  const resultado = rows.map((pokemon) => {
+    return {
+      id: pokemon.id,
+      next: next[0]?.id || null,
+      prev: prev[0]?.id || null,
+      nombre: pokemon.nombre,
+      numero: pokemon.numero,
+      categoria: [pokemon.categoria1, pokemon.categoria2],
+      colorcategoria: [pokemon.color_cat1, pokemon.color_cat2],
+      about: {
+        weight: pokemon.weight,
+        height: pokemon.height,
+        moves: [pokemon.nombre1, pokemon.nombre2],
+        color: pokemon.color,
+        descripcion: pokemon.descripcion,
+      },
+      basestats: {
+        hp: pokemon.hp,
+        atk: pokemon.atk,
+        def: pokemon.def,
+        satk: pokemon.satk,
+        sdef: pokemon.sdef,
+        spd: pokemon.spd,
+      },
+    };
+  });
+
+  res.send(resultado[0]);
+};
 
 // function encontrarPorTypes(pokemonesFiltrados, type1) {
 //   pokemonesFiltrados = pokemonesFiltrados.filter((e) =>
@@ -68,13 +146,3 @@ exports.getPokemones = async (req, res) => {
 //   );
 
 //   const pokemon = listaPokemones[posicionPokemon];
-
-//   const next =
-//     posicionPokemon != listaPokemones.length - 1
-//       ? listaPokemones[posicionPokemon + 1].numero
-//       : null;
-
-//   const prev =
-//     posicionPokemon != 0 ? listaPokemones[posicionPokemon - 1].numero : null;
-//   res.send({ ...pokemon, next, prev });
-// };
