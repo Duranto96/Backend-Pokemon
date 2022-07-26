@@ -3,15 +3,15 @@
 const { Pool } = require("pg");
 const pool = new Pool({
   user: "postgres",
-  database: "proyectoFinal",
-  password: "1234",
+  database: "proyectofinal",
+  password: "8508",
 });
 
 //////////////////////Mostrar Lista de Pokemones///////////////////////
 exports.getPokemones = async (req, res) => {
   //solucionar consulta grande con los join
   const { rows } = await pool.query(
-    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id"
+    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where pokemon.eliminado = false order by pokemon.id"
   );
   const resultado = rows.map((pokemon) => {
     return {
@@ -37,6 +37,7 @@ exports.getPokemones = async (req, res) => {
       },
     };
   });
+
   //ver como devuelve los datos
 
   // a raiz de eso, armar el objeto pokemon que le gusta al front
@@ -57,13 +58,13 @@ exports.getPokemonesByid = async (req, res) => {
 
   const { rows: next } = await pool.query(
     "select id FROM pokemon where id =$1",
-    [id + 1]
+    [Number(id) + 1]
   );
   const { rows: prev } = await pool.query(
     "select id FROM pokemon where id =$1",
-    [id - 1]
+    [Number(id) - 1]
   );
-
+  console.log(next);
   const resultado = rows.map((pokemon) => {
     return {
       id: pokemon.id,
@@ -90,50 +91,96 @@ exports.getPokemonesByid = async (req, res) => {
       },
     };
   });
-
+  console.log(resultado[0]);
   res.send(resultado[0]);
-
-  console.log(next);
 };
 
 exports.deletePokemones = async (req, res) => {
   const { id } = req.params;
-  const { rows } = await pool.query("delete FROM pokemon where id =$1", [id]);
-  res.send(rows[0]);
+  const { rows } = await pool.query(
+    "update pokemon set eliminado = true where id =$1",
+    [id]
+  );
+  res.send("El pokemon se ha borrado correctamente");
 };
 
-// function encontrarPorTypes(pokemonesFiltrados, type1) {
-//   pokemonesFiltrados = pokemonesFiltrados.filter((e) =>
-//     e.elemento.some((el) => el.toLowerCase() === type1.toLowerCase())
-//   );
-//   return pokemonesFiltrados;
-// }
+exports.postPokemones = async (req, res) => {
+  const pokemonNuevo = {
+    nombre: req.body.nombre,
+    numero: req.body.numero,
+    categoria: [req.body.categoria[0], req.body.categoria[1]],
+    colorcategoria: [req.body.colorcategoria[0], req.body.colorcategoria[1]],
+    about: {
+      weight: req.body.about.weight,
+      height: req.body.about.height,
+      moves: [req.body.about.moves[0], req.body.about.moves[1]],
+      color: req.body.about.color,
+      descripcion: req.body.about.descripcion,
+    },
+    basestats: {
+      hp: req.body.basestats.hp,
+      atk: req.body.basestats.atk,
+      def: req.body.basestats.def,
+      satk: req.body.basestats.satk,
+      sdef: req.body.basestats.sdef,
+      spd: req.body.basestats.spd,
+    },
+  };
 
-// /////////////////////////////////////////////////////////////////
-// exports.postPokemones = (req, res) => {
-//   const pokemon = req.body;
-//   console.log(req.body);
-//   const nuevaListaPokemon = listaPokemones;
-//   nuevaListaPokemon.push(pokemon);
-//   res.send(nuevaListaPokemon[nuevaListaPokemon.length - 1]);
-// };
-
-// ///////////////////////////////////////////////////////////////
-// exports.putPokemones = (req, res) => {
-//   const pokemon = req.body;
-//   const { id } = req.params;
-//   //Hallar posición de Pokemon a editar:
-//   const posicionPokemonAEditar = listaPokemones.findIndex(
-//     (poke) => poke.numero === id
-//   );
-
-//   const nuevoPokemon = {
-//     ...listaPokemones[posicionPokemonAEditar],
-//     ...pokemon,
-//   };
-
-//   listaPokemones[posicionPokemonAEditar] = nuevoPokemon;
-//   res.send(nuevoPokemon);
-// };
-
-// ////////////////////////////////////////////////////////////
+  try {
+    await pool.query(
+      "INSERT INTO public.moves(nombre1, nombre2, moves_id) VALUES ($1, $2, $3)",
+      [
+        pokemonNuevo.about.moves[0],
+        pokemonNuevo.about.moves[1],
+        pokemonNuevo.numero,
+      ]
+    );
+    await pool.query(
+      "INSERT INTO public.about(weight, height, color, descripcion, moves_id, about_id) VALUES ($1, $2, $3, $4, $5, $6)",
+      [
+        pokemonNuevo.about.weight,
+        pokemonNuevo.about.height,
+        pokemonNuevo.about.color,
+        pokemonNuevo.about.descripcion,
+        pokemonNuevo.numero,
+        pokemonNuevo.numero,
+      ]
+    );
+    await pool.query(
+      "INSERT INTO public.basestats( basestats_id, hp, atk, def, satk, sdef, spd) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [
+        pokemonNuevo.numero,
+        pokemonNuevo.basestats.hp,
+        pokemonNuevo.basestats.atk,
+        pokemonNuevo.basestats.def,
+        pokemonNuevo.basestats.satk,
+        pokemonNuevo.basestats.sdef,
+        pokemonNuevo.basestats.spd,
+      ]
+    );
+    await pool.query(
+      "INSERT INTO public.categorias(categoria1, categoria2, color_cat1, color_cat2, categoria_id) VALUES ($1, $2, $3, $4, $5)",
+      [
+        pokemonNuevo.categoria[0],
+        pokemonNuevo.categoria[1],
+        pokemonNuevo.colorcategoria[0],
+        pokemonNuevo.colorcategoria[1],
+        pokemonNuevo.numero,
+      ]
+    );
+    await pool.query(
+      "INSERT INTO public.pokemon (nombre, numero, basestats_id, categoria_id, about_id) VALUES ($1, $2, $3, $4, $5)",
+      [
+        pokemonNuevo.nombre,
+        pokemonNuevo.numero,
+        pokemonNuevo.numero,
+        pokemonNuevo.numero,
+        pokemonNuevo.numero,
+      ]
+    );
+    res.json({ success: true, pokemonNuevo });
+  } catch (error) {
+    res.json({ error: error });
+  }
+};
