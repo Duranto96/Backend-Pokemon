@@ -18,6 +18,7 @@ exports.getPokemones = async (req, res) => {
       id: pokemon.id,
       nombre: pokemon.nombre,
       numero: pokemon.numero,
+      imagen: pokemon.imagen,
       categoria: [pokemon.categoria1, pokemon.categoria2],
       colorcategoria: [pokemon.color_cat1, pokemon.color_cat2],
       about: {
@@ -70,6 +71,7 @@ exports.getPokemonesByid = async (req, res) => {
       id: pokemon.id,
       next: next[0]?.id || null,
       prev: prev[0]?.id || null,
+      imagen: pokemon.imagen,
       nombre: pokemon.nombre,
       numero: pokemon.numero,
       categoria: [pokemon.categoria1, pokemon.categoria2],
@@ -106,6 +108,7 @@ exports.deletePokemones = async (req, res) => {
 
 exports.postPokemones = async (req, res) => {
   const pokemonNuevo = {
+    imagen: req.body.imagen,
     nombre: req.body.nombre,
     numero: req.body.numero,
     categoria: [req.body.categoria[0], req.body.categoria[1]],
@@ -170,13 +173,14 @@ exports.postPokemones = async (req, res) => {
       ]
     );
     await pool.query(
-      "INSERT INTO public.pokemon (nombre, numero, basestats_id, categoria_id, about_id) VALUES ($1, $2, $3, $4, $5)",
+      "INSERT INTO public.pokemon (nombre, numero, basestats_id, categoria_id, about_id, imagen) VALUES ($1, $2, $3, $4, $5, $6)",
       [
         pokemonNuevo.nombre,
         pokemonNuevo.numero,
         pokemonNuevo.numero,
         pokemonNuevo.numero,
         pokemonNuevo.numero,
+        pokemonNuevo.imagen,
       ]
     );
     res.json({ success: true, pokemonNuevo });
