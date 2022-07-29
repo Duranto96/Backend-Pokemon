@@ -52,7 +52,7 @@ exports.getPokemonesByid = async (req, res) => {
   //solucionar consulta grande con los join
   const { id } = req.params;
   const { rows } = await pool.query(
-    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where id =$1",
+    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where id =$1 AND pokemon.eliminado = false",
     [id]
   );
   ///////////////////////////Navegar siguiente y anterior///////////////////
