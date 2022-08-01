@@ -1,5 +1,3 @@
-// const listaPokemones = require("../models/listaPokemon");
-// const pokemones = require("../models/listaPokemon");
 const { Pool } = require("pg");
 const pool = new Pool({
   user: "postgres",
@@ -7,9 +5,7 @@ const pool = new Pool({
   password: "8508",
 });
 
-//////////////////////Mostrar Lista de Pokemones///////////////////////
 exports.getPokemones = async (req, res) => {
-  //solucionar consulta grande con los join
   const { rows } = await pool.query(
     "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where pokemon.eliminado = false order by pokemon.numero"
   );
@@ -38,34 +34,26 @@ exports.getPokemones = async (req, res) => {
       },
     };
   });
-
-  //ver como devuelve los datos
-
-  // a raiz de eso, armar el objeto pokemon que le gusta al front
-
-  //rows array [{nombre:pokemon.nombre, numero:pokemon.numero, about:{weight:pokemon.weight}}]
   res.send(resultado);
 };
 
-//////////////////////Mostrar Pokemon Descripto///////////////////////
 exports.getPokemonesByid = async (req, res) => {
-  //solucionar consulta grande con los join
   const { numero } = req.params;
   const { rows } = await pool.query(
     "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where numero =$1 AND pokemon.eliminado = false",
     [numero]
   );
-  ///////////////////////////Navegar siguiente y anterior///////////////////
 
   const { rows: next } = await pool.query(
     "select numero from pokemon where numero > $1 and pokemon.eliminado = false order by numero asc limit 1",
     [numero]
   );
+
   const { rows: prev } = await pool.query(
     "select numero from pokemon where numero < $1 and pokemon.eliminado = false order by numero desc limit 1",
     [numero]
   );
-  console.log(next);
+
   const resultado = rows.map((pokemon) => {
     return {
       next: next[0]?.numero || null,
