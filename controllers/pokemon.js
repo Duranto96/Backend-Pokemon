@@ -11,7 +11,7 @@ const pool = new Pool({
 exports.getPokemones = async (req, res) => {
   //solucionar consulta grande con los join
   const { rows } = await pool.query(
-    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where pokemon.eliminado = false order by pokemon.id"
+    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where pokemon.eliminado = false order by pokemon.numero"
   );
   const resultado = rows.map((pokemon) => {
     return {
@@ -50,27 +50,26 @@ exports.getPokemones = async (req, res) => {
 //////////////////////Mostrar Pokemon Descripto///////////////////////
 exports.getPokemonesByid = async (req, res) => {
   //solucionar consulta grande con los join
-  const { id } = req.params;
+  const { numero } = req.params;
   const { rows } = await pool.query(
-    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where id =$1 AND pokemon.eliminado = false",
-    [id]
+    "select * FROM pokemon JOIN about ON pokemon.about_id = about.about_id JOIN categorias ON pokemon.categoria_id = categorias.categoria_id JOIN basestats ON pokemon.basestats_id = basestats.basestats_id JOIN moves ON about.moves_id = moves.moves_id where numero =$1 AND pokemon.eliminado = false",
+    [numero]
   );
   ///////////////////////////Navegar siguiente y anterior///////////////////
 
   const { rows: next } = await pool.query(
-    "select id FROM pokemon where id =$1",
-    [Number(id) + 1]
+    "select numero from pokemon where numero > $1 and pokemon.eliminado = false order by numero asc limit 1",
+    [numero]
   );
   const { rows: prev } = await pool.query(
-    "select id FROM pokemon where id =$1",
-    [Number(id) - 1]
+    "select numero from pokemon where numero < $1 and pokemon.eliminado = false order by numero desc limit 1",
+    [numero]
   );
   console.log(next);
   const resultado = rows.map((pokemon) => {
     return {
-      id: pokemon.id,
-      next: next[0]?.id || null,
-      prev: prev[0]?.id || null,
+      next: next[0]?.numero || null,
+      prev: prev[0]?.numero || null,
       imagen: pokemon.imagen,
       nombre: pokemon.nombre,
       numero: pokemon.numero,
@@ -93,15 +92,14 @@ exports.getPokemonesByid = async (req, res) => {
       },
     };
   });
-  console.log(resultado[0]);
   res.send(resultado[0]);
 };
 
 exports.deletePokemones = async (req, res) => {
-  const { id } = req.params;
+  const { numero } = req.params;
   const { rows } = await pool.query(
-    "update pokemon set eliminado = true where id =$1",
-    [id]
+    "update pokemon set eliminado = true where numero =$1",
+    [numero]
   );
   res.send("El pokemon se ha borrado correctamente");
 };
