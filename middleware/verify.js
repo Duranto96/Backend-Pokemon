@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const TOKEN_SECRET = "UnaClaceParaFirmarelToken";
 
-//middleware para validar token (rutas protegidas)
 const verifyToken = (req, res, next) => {
   const token = req.header("auth-token");
   if (!token) {
@@ -10,7 +9,7 @@ const verifyToken = (req, res, next) => {
   try {
     const verified = jwt.verify(token, TOKEN_SECRET);
     req.user = verified;
-    next(); //continuamos
+    next();
   } catch (error) {
     res.status(400).json({ error: "El token no es válido" });
   }

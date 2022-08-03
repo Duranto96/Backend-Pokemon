@@ -158,18 +158,26 @@ exports.postPokemones = async (req, res) => {
         pokemonNuevo.numero,
       ]
     );
-    await pool.query(
-      "INSERT INTO public.pokemon (nombre, numero, basestats_id, categoria_id, about_id, imagen) VALUES ($1, $2, $3, $4, $5, $6)",
-      [
-        pokemonNuevo.nombre,
-        pokemonNuevo.numero,
-        pokemonNuevo.numero,
-        pokemonNuevo.numero,
-        pokemonNuevo.numero,
-        pokemonNuevo.imagen,
-      ]
+    const { rows } = await pool.query(
+      "SELECT * from public.pokemon where numero = $1",
+      [pokemonNuevo.numero]
     );
-    res.json({ success: true, pokemonNuevo });
+    if (rows[0]) {
+      res.status(400).json({ error: "Este Pokemon ya existe" });
+    } else {
+      await pool.query(
+        "INSERT INTO public.pokemon (nombre, numero, basestats_id, categoria_id, about_id, imagen) VALUES ($1, $2, $3, $4, $5, $6)",
+        [
+          pokemonNuevo.nombre,
+          pokemonNuevo.numero,
+          pokemonNuevo.numero,
+          pokemonNuevo.numero,
+          pokemonNuevo.numero,
+          pokemonNuevo.imagen,
+        ]
+      );
+      res.json({ success: true, pokemonNuevo });
+    }
   } catch (error) {
     res.json({ error: error });
   }

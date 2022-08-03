@@ -6,6 +6,7 @@ const pool = new Pool({
 });
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { TOKEN_SECRET } = require("../middleware/verify");
 
 exports.registrarUsuario = async (req, res) => {
   const salt = await bcrypt.genSalt(10);
@@ -16,13 +17,20 @@ exports.registrarUsuario = async (req, res) => {
     mail: req.body.mail,
     password: password,
   };
-
   try {
-    pool.query(
-      "INSERT INTO public.usuarios (nombre, mail, password) VALUES ($1, $2, $3)",
-      [newUser.nombre, newUser.mail, password]
+    const { rows } = await pool.query(
+      "SELECT * from public.usuarios where nombre = $1",
+      [newUser.nombre]
     );
-    res.json({ success: true, newUser, salt });
+    if (rows[0]) {
+      res.status(400).json({ error: "ya existe un usuario con este nombre" });
+    } else {
+      await pool.query(
+        "INSERT INTO public.usuarios (nombre, mail, password) VALUES ($1, $2, $3)",
+        [newUser.nombre, newUser.mail, password]
+      );
+      res.json({ success: true, newUser, salt });
+    }
   } catch (error) {
     res.json({ error: error });
   }
