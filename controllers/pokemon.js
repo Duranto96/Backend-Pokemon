@@ -117,47 +117,6 @@ exports.postPokemones = async (req, res) => {
   };
 
   try {
-    await pool.query(
-      "INSERT INTO public.moves(nombre1, nombre2, moves_id) VALUES ($1, $2, $3)",
-      [
-        pokemonNuevo.about.moves[0],
-        pokemonNuevo.about.moves[1],
-        pokemonNuevo.numero,
-      ]
-    );
-    await pool.query(
-      "INSERT INTO public.about(weight, height, color, descripcion, moves_id, about_id) VALUES ($1, $2, $3, $4, $5, $6)",
-      [
-        pokemonNuevo.about.weight,
-        pokemonNuevo.about.height,
-        pokemonNuevo.about.color,
-        pokemonNuevo.about.descripcion,
-        pokemonNuevo.numero,
-        pokemonNuevo.numero,
-      ]
-    );
-    await pool.query(
-      "INSERT INTO public.basestats( basestats_id, hp, atk, def, satk, sdef, spd) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-      [
-        pokemonNuevo.numero,
-        pokemonNuevo.basestats.hp,
-        pokemonNuevo.basestats.atk,
-        pokemonNuevo.basestats.def,
-        pokemonNuevo.basestats.satk,
-        pokemonNuevo.basestats.sdef,
-        pokemonNuevo.basestats.spd,
-      ]
-    );
-    await pool.query(
-      "INSERT INTO public.categorias(categoria1, categoria2, color_cat1, color_cat2, categoria_id) VALUES ($1, $2, $3, $4, $5)",
-      [
-        pokemonNuevo.categoria[0],
-        pokemonNuevo.categoria[1],
-        pokemonNuevo.colorcategoria[0],
-        pokemonNuevo.colorcategoria[1],
-        pokemonNuevo.numero,
-      ]
-    );
     const { rows } = await pool.query(
       "SELECT * from public.pokemon where numero = $1",
       [pokemonNuevo.numero]
@@ -166,19 +125,63 @@ exports.postPokemones = async (req, res) => {
       res.status(400).json({ error: "Este Pokemon ya existe" });
     } else {
       await pool.query(
-        "INSERT INTO public.pokemon (nombre, numero, basestats_id, categoria_id, about_id, imagen) VALUES ($1, $2, $3, $4, $5, $6)",
+        "INSERT INTO public.moves(nombre1, nombre2, moves_id) VALUES ($1, $2, $3)",
         [
-          pokemonNuevo.nombre,
+          pokemonNuevo.about.moves[0],
+          pokemonNuevo.about.moves[1],
           pokemonNuevo.numero,
-          pokemonNuevo.numero,
-          pokemonNuevo.numero,
-          pokemonNuevo.numero,
-          pokemonNuevo.imagen,
         ]
       );
-      res.json({ success: true, pokemonNuevo });
+      await pool.query(
+        "INSERT INTO public.about(weight, height, color, descripcion, moves_id, about_id) VALUES ($1, $2, $3, $4, $5, $6)",
+        [
+          pokemonNuevo.about.weight,
+          pokemonNuevo.about.height,
+          pokemonNuevo.about.color,
+          pokemonNuevo.about.descripcion,
+          pokemonNuevo.numero,
+          pokemonNuevo.numero,
+        ]
+      );
+      await pool.query(
+        "INSERT INTO public.basestats( basestats_id, hp, atk, def, satk, sdef, spd) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        [
+          pokemonNuevo.numero,
+          pokemonNuevo.basestats.hp,
+          pokemonNuevo.basestats.atk,
+          pokemonNuevo.basestats.def,
+          pokemonNuevo.basestats.satk,
+          pokemonNuevo.basestats.sdef,
+          pokemonNuevo.basestats.spd,
+        ]
+      );
+      await pool.query(
+        "INSERT INTO public.categorias(categoria1, categoria2, color_cat1, color_cat2, categoria_id) VALUES ($1, $2, $3, $4, $5)",
+        [
+          pokemonNuevo.categoria[0],
+          pokemonNuevo.categoria[1],
+          pokemonNuevo.colorcategoria[0],
+          pokemonNuevo.colorcategoria[1],
+          pokemonNuevo.numero,
+        ]
+      );
+      {
+        await pool.query(
+          "INSERT INTO public.pokemon (nombre, numero, basestats_id, categoria_id, about_id, imagen) VALUES ($1, $2, $3, $4, $5, $6)",
+          [
+            pokemonNuevo.nombre,
+            pokemonNuevo.numero,
+            pokemonNuevo.numero,
+            pokemonNuevo.numero,
+            pokemonNuevo.numero,
+            pokemonNuevo.imagen,
+          ]
+        );
+        res.json({ success: true, pokemonNuevo });
+      }
     }
   } catch (error) {
+    res.status(500);
     res.json({ error: error });
   }
 };
